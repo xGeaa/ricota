@@ -228,3 +228,8 @@ create table public.character_spells (
   description text,
   prepared boolean not null default false
 );
+
+-- Grant full access to the service_role used by the API.
+-- Without this, the service_role key returns "permission denied"
+-- even though RLS is satisfied, because table-level GRANTs are separate from RLS policies.
+grant select, insert, update, delete on all tables in schema public to service_role;
