@@ -94,6 +94,47 @@ Session model:
 
 ---
 
+## Internationalisation (i18n)
+
+**Decision:** All internal values (database enums, API keys, code identifiers) are in English. User-facing text is handled via i18n at the UI layer using **i18next** + **react-i18next**.
+
+**Reasoning:**
+- Ricota is aimed at a public audience across multiple languages. Hardcoding Spanish text into the database or business logic would make adding new languages require database migrations and API changes — a significant cost.
+- Separating data from display text means a new language is just a new JSON translation file, with zero changes to the backend.
+- The initial release will ship with English (`en`) and Spanish (`es`). The architecture supports adding more without any structural changes.
+
+**How it works in practice:**
+
+Database and API always use English keys:
+```
+skill_name: "acrobatics" | "arcana" | "athletics" | ...
+condition_name: "frightened" | "stunned" | "prone" | ...
+```
+
+The mobile app maps those keys to display strings via translation files:
+```json
+// en.json
+{ "skills": { "acrobatics": "Acrobatics", "arcana": "Arcana" } }
+
+// es.json
+{ "skills": { "acrobatics": "Acrobacias", "arcana": "Arcanos" } }
+```
+
+Components never contain raw strings — always `t('skills.acrobatics')`.
+
+---
+
+## Derived values are calculated on the client
+
+**Decision:** The database stores only base values. Derived stats are computed in the mobile app, never stored.
+
+**Reasoning:**
+- PF2e modifier formulas are deterministic: `skill modifier = ability modifier + proficiency bonus + item bonus`. Storing the result would create a second source of truth that can go out of sync with its inputs.
+- Keeping calculations in the client means the database only needs to be updated when a base value changes (e.g. the player levels up), not every time a derived value would change as a consequence.
+- This also makes the real-time sync simpler: when `current_hp` changes, only that one field is broadcast — not a cascade of derived values.
+
+---
+
 ## Commit conventions
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/):
