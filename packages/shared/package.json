@@ -1,0 +1,5 @@
+{
+  "name": "@ricota/shared",
+  "private": true,
+  "main": "index.js"
+}
